@@ -1,0 +1,7 @@
+/.idea
+/vendor
+/composer.lock
+/build
+*.p12
+/web
+/public_html
