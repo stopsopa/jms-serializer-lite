@@ -7,7 +7,6 @@ use ArrayAccess;
 use ReflectionException;
 use ReflectionProperty;
 use ReflectionMethod;
-use Exception;
 use Traversable;
 
 abstract class AbstractEntity {
@@ -16,20 +15,16 @@ abstract class AbstractEntity {
 
     /**
      * @param object $entity
-     * @param string|array $attr - klucz w fromacie 'comment' lub z kropką typu 'author.id'
+     * @param string|array $attr - Key like 'author.id'
      * @param $default - If you provide this parameter that is optional then this method don't throw
      *                   an exception but return this value
      * @return mixed
-     * @throws Exception
-     *   codes:
-     *     ($e->getCode()%100)==1 - Parameter 'attr'  is not a string, is:
-     *     ($e->getCode()%100)==2 - Parameter 'attr' is empty string
-     *     ($e->getCode()%100)==3 - Key '$attr' doesn't exist in array
+     * @throws AbstractEntityException
      */
     public static function get($entity, $attr) {
 
         if (!is_string($attr)) {
-            throw new AbstractEntityException("Parameter 'attr' is not a string, it is: ".  gettype($attr), AbstractEntityException::ATTR_NOT_STRING);
+            throw new AbstractEntityException("Parameter 'attr' is not a string, it is: ".  gettype($attr), AbstractEntityException::ATTR_IS_NOT_STRING);
         }
 
         $args = func_get_args();
@@ -82,7 +77,7 @@ abstract class AbstractEntity {
             }
 
             if ($attr === '') {
-                throw new AbstractEntityException("Parameter 'attr' is empty string", AbstractEntityException::ATTR_IS_EMPTY_STRING);
+                throw new AbstractEntityException("Parameter 'attr' is empty string: ".json_encode($attr), AbstractEntityException::ATTR_IS_EMPTY_STRING);
             }
 
             if (strpos($attr, '()') !== false) {
@@ -105,11 +100,12 @@ abstract class AbstractEntity {
                 $class = self::getClass($entity);
 
                 throw new AbstractEntityException(
-                    sprintf("Method %s() %s in class %s"),
-                    $method,
-                    $access ? "is not public" : "doesn't exist",
-                    $class,
-                    AbstractEntityException::DIRECTLY_CALLED_METHOD_DONT_EXIST
+                    sprintf("Method %s() %s in class %s",
+                        $method,
+                        $access ? "is not public" : "doesn't exist",
+                        $class
+                    ),
+                    AbstractEntityException::DIRECTLY_CALLED_METHOD_DOESNT_EXIST
                 );
             }
             else {
@@ -167,7 +163,10 @@ abstract class AbstractEntity {
 
         $class = self::getClass($entity);
 
-        throw new AbstractEntityException(__METHOD__." error: Property '$attr' doesn't exist and methods get$short(), is$short(), has$short(), $attr() are not accessible in $class", 4);
+        throw new AbstractEntityException(
+            __METHOD__." error: Property '$attr' doesn't exist and methods get$short(), is$short(), has$short(), $attr() are not accessible in '$class'",
+            AbstractEntityException::WRONG_KEY
+        );
     }
     public static function cascadeExplode($key)
     {

@@ -1,6 +1,7 @@
 <?php
 
 namespace Stopsopa\LiteSerializer\Examples;
+
 use ArrayAccess;
 
 class ExampleArrayAccess implements ArrayAccess {

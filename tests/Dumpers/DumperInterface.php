@@ -7,12 +7,13 @@ use Stopsopa\LiteSerializer\Entities\Group;
 use Stopsopa\LiteSerializer\Entities\User;
 use Stopsopa\LiteSerializer\Exceptions\DumperContinueException;
 
-class DumperTry2 extends Dumper
+class DumperInterface extends Dumper
 {
     public function dumpStopsopaLiteSerializerEntities_User($entity) {
 
         $dump = array(
             'groups'    => 'groups',
+            'comments'  => 'comments'
         );
 
         if ($this->scope !== 'noname') {
@@ -23,12 +24,8 @@ class DumperTry2 extends Dumper
     }
     public function dumpStopsopaLiteSerializerEntities_Group($entity) {
 
-        if ($entity->getId() === 2) {
-            throw new DumperContinueException();
-        }
-
         $dump = array(
-            'id' => 'id'
+            'id'    => 'id'
         );
 
         if ($this->scope !== 'noname') {
@@ -37,5 +34,4 @@ class DumperTry2 extends Dumper
 
         return $this->toArray($entity, $dump);
     }
-
 }

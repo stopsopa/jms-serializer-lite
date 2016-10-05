@@ -7,18 +7,11 @@ use Stopsopa\LiteSerializer\Exceptions\AbstractEntityException;
 use Stopsopa\LiteSerializer\Libs\AbstractEntity;
 use Stopsopa\LiteSerializer\Exceptions\DumperContinueException;
 
-/**
- * - Tidy up Exceptions codes
- *  - implement cache form generated methods
- */
 abstract class Dumper extends AbstractEntity {
 
-//    const MODE_AUTO         = 1;
-//    const MODE_COLLECTION   = 2;
-//    const MODE_ENTITY       = 3;
-    const MODE_AUTO         = 'aut';
-    const MODE_COLLECTION   = 'col';
-    const MODE_ENTITY       = 'ent';
+    const MODE_AUTO         = 1;
+    const MODE_COLLECTION   = 2;
+    const MODE_ENTITY       = 3;
 
     protected $level = 0;
     protected $scope = null;
@@ -33,6 +26,12 @@ abstract class Dumper extends AbstractEntity {
     public static function getInstance() {
         $cls = get_called_class();
         return new $cls;
+    }
+    public function dumpMode($entity, $mode) {
+        return $this->dump($entity, $mode, $scope = null);
+    }
+    public function dumpScope($entity, $scope) {
+        return $this->dump($entity, $mode = null, $scope);
     }
 
     /**
@@ -65,6 +64,17 @@ abstract class Dumper extends AbstractEntity {
 
         if ($mode === static::MODE_AUTO) {
 
+            if ($entity instanceof DumpToArrayInterface) {
+
+                $this->level += 1;
+
+                $return = $entity->dumpToArray($this->scope, $this->level);
+
+                $this->level -= 1;
+
+                return $return;
+            }
+
             $isfo = static::isForeachable($entity);
 
             $mode = $isfo ? static::MODE_COLLECTION : static::MODE_ENTITY;
@@ -96,41 +106,29 @@ abstract class Dumper extends AbstractEntity {
             return $tmp;
         }
 
-        try {
+        $method = static::getMethodName($entity);
 
-            if ($entity instanceof DumpToArrayInterface) {
+        if (!method_exists($this, $method)) {
 
-                return $entity->dumpToArray($this->scope, $this->level);
-            }
+            // it would be good to test accessability of this method but i don't do that
+            // because of ReflectionMethod bad performance, i assume that because of
+            // purpose of this methods they always will be public
 
-            $method = static::getMethodName($entity);
+            $tclass = static::getClass($this);
 
-            if (!method_exists($this, $method)) {
-
-                // it would be good to test accessability of this method but i don't do that
-                // because of ReflectionMethod bad performance, i assume that because of
-                // purpose of this methods they always will be public
-
-                $tclass = static::getClass($this);
-
-                throw new AbstractEntityException(
-                    sprintf(
-                        "Dumping entity of class '%s' is not handled by dumper '%s', this entity should implement interface '%s' or add method '%s(\$entity, \$scope = null, \$level = 0)' to dumper",
-                        static::getClass($entity),
-                        $tclass,
-//                        'Stopsopa\\LiteSerializer\\DumpToArrayInterface',
-                        DumpToArrayInterface::class,
-                        $tclass.'->'.$method
-                    ),
-                    AbstractEntityException::METHOD_NOT_IMPLEMENTED
-                );
-            }
-
-            $method;
-            return $this->{$method}($entity);
+            throw new AbstractEntityException(
+                sprintf(
+                    "Dumping entity of class '%s' is not handled by dumper '%s', this entity should implement interface '%s' or add method '%s(\$entity)' to dumper",
+                    static::getClass($entity),
+                    $tclass,
+                    'Stopsopa\\LiteSerializer\\DumpToArrayInterface',
+                    $tclass.'->'.$method
+                ),
+                AbstractEntityException::METHOD_NOT_IMPLEMENTED
+            );
         }
-        catch (DumperContinueException $e) {
-        }
+
+        return $this->{$method}($entity);
     }
     /**
      * Helper method
@@ -145,11 +143,13 @@ abstract class Dumper extends AbstractEntity {
 
         foreach ($fields as $target => $key) {
 
-            $default = null;
+            $isdefault = false;
 
             $mode = static::MODE_AUTO;
 
             if (is_array($key)) {
+
+                $isdefault = true;
 
                 $default    = $key[1];
 
@@ -157,22 +157,17 @@ abstract class Dumper extends AbstractEntity {
                     $mode = $key[2];
                 }
 
-                $key        = $key[0];
+                $key = $key[0];
             }
 
-            try {
-
+            if ($isdefault) {
+                $tmp2 = AbstractEntity::get($entity, $key, $default);
+            }
+            else {
                 $tmp2 = AbstractEntity::get($entity, $key);
-
-                $tmp;
-
-                $tmp[$target] = $this->dump($tmp2, $mode);
-            } catch (AbstractEntityException $e) {
-//                if () {
-//
-//                }
-                $tmp[$target] = $default;
             }
+
+            $tmp[$target] = $this->dump($tmp2, $mode);
         }
 
         return $tmp;

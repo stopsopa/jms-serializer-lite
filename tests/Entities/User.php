@@ -7,6 +7,7 @@ class User {
     protected $name;
     protected $surname;
     protected $groups;
+    protected $comments;
 
     public function __construct()
     {
@@ -88,4 +89,23 @@ class User {
         $this->groups[] = $group;
         return $this;
     }
+
+    /**
+     * @return mixed
+     */
+    public function getComments()
+    {
+        return $this->comments;
+    }
+
+    /**
+     * @param mixed $comments
+     * @return User
+     */
+    public function setComments($comments)
+    {
+        $this->comments = $comments;
+        return $this;
+    }
+
 }

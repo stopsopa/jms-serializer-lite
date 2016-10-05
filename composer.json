@@ -1,6 +1,6 @@
 {
   "name": "stopsopa/jms-serializer-lite",
-  "description": "Simple library to easy dump object or array from db to json - one direction",
+  "description": "Simple framework agnostic library to easy dump object or array from db to json - one direction",
   "license": "MIT",
   "authors": [
     {

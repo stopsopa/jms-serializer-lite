@@ -2,7 +2,7 @@
 
 namespace Stopsopa\LiteSerializer\Exceptions;
 
-use \Exception;
+use Exception;
 
 class DumperContinueException extends Exception {
 }

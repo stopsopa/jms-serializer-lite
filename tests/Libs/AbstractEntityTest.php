@@ -1,6 +1,7 @@
 <?php
 
 namespace Stopsopa\LiteSerializer\Libs;
+
 use PHPUnit_Framework_TestCase;
 use Stopsopa\LiteSerializer\Examples\ExampleArrayAccess;
 use Stopsopa\LiteSerializer\Examples\ExampleClass;
@@ -16,7 +17,7 @@ class AbstractEntityTest extends PHPUnit_Framework_TestCase {
 
     /**
      * @expectedException Stopsopa\LiteSerializer\Exceptions\AbstractEntityException
-     * @expectedExceptionCode 1
+     * @expectedExceptionCode 4
      * @expectedExceptionMessage Parameter 'attr' is not a string, it is: integer
      */
     public function testWrongAttr() {
@@ -29,7 +30,7 @@ class AbstractEntityTest extends PHPUnit_Framework_TestCase {
 
     /**
      * @expectedException Stopsopa\LiteSerializer\Exceptions\AbstractEntityException
-     * @expectedExceptionCode 2
+     * @expectedExceptionCode 5
      * @expectedExceptionMessage Parameter 'attr' is empty string
      */
     public function testEmptyAttrObject() {
@@ -64,8 +65,8 @@ class AbstractEntityTest extends PHPUnit_Framework_TestCase {
 
     /**
      * @expectedException Stopsopa\LiteSerializer\Exceptions\AbstractEntityException
-     * @expectedExceptionCode 4
-     * @expectedExceptionMessage Stopsopa\LiteSerializer\Libs\AbstractEntity::internalValueByMethodOrAttribute error: Property 'seven' doesn't exist and methods getSeven(), isSeven(), hasSeven(), seven() are not accessible in stdClass
+     * @expectedExceptionCode 1
+     * @expectedExceptionMessage Stopsopa\LiteSerializer\Libs\AbstractEntity::internalValueByMethodOrAttribute error: Property 'seven' doesn't exist and methods getSeven(), isSeven(), hasSeven(), seven() are not accessible in 'stdClass'
      */
     public function testWrongDot() {
 
@@ -102,8 +103,8 @@ class AbstractEntityTest extends PHPUnit_Framework_TestCase {
 
     /**
      * @expectedException Stopsopa\LiteSerializer\Exceptions\AbstractEntityException
-     * @expectedExceptionCode 4
-     * @expectedExceptionMessage Stopsopa\LiteSerializer\Libs\AbstractEntity::internalValueByMethodOrAttribute error: Property 'two' doesn't exist and methods getTwo(), isTwo(), hasTwo(), two() are not accessible in array
+     * @expectedExceptionCode 1
+     * @expectedExceptionMessage Stopsopa\LiteSerializer\Libs\AbstractEntity::internalValueByMethodOrAttribute error: Property 'two' doesn't exist and methods getTwo(), isTwo(), hasTwo(), two() are not accessible in 'array'
      */
     public function testWrongDotRecursion() {
 
@@ -123,8 +124,8 @@ class AbstractEntityTest extends PHPUnit_Framework_TestCase {
     }
     /**
      * @expectedException Stopsopa\LiteSerializer\Exceptions\AbstractEntityException
-     * @expectedExceptionCode 4
-     * @expectedExceptionMessage Stopsopa\LiteSerializer\Libs\AbstractEntity::internalValueByMethodOrAttribute error: Property 'three' doesn't exist and methods getThree(), isThree(), hasThree(), three() are not accessible in Stopsopa\LiteSerializer\Examples\ExampleArrayAccess
+     * @expectedExceptionCode 1
+     * @expectedExceptionMessage Stopsopa\LiteSerializer\Libs\AbstractEntity::internalValueByMethodOrAttribute error: Property 'three' doesn't exist and methods getThree(), isThree(), hasThree(), three() are not accessible in 'Stopsopa\LiteSerializer\Examples\ExampleArrayAccess'
      */
     public function testArrayAccessWrong() {
 
@@ -148,8 +149,8 @@ class AbstractEntityTest extends PHPUnit_Framework_TestCase {
     }
     /**
      * @expectedException Stopsopa\LiteSerializer\Exceptions\AbstractEntityException
-     * @expectedExceptionCode 4
-     * @expectedExceptionMessage Stopsopa\LiteSerializer\Libs\AbstractEntity::internalValueByMethodOrAttribute error: Methods getMethodDoesntExist() doesn't exist in class Stopsopa\LiteSerializer\Examples\ExampleClass
+     * @expectedExceptionCode 6
+     * @expectedExceptionMessage Method getMethodDoesntExist() doesn't exist in class Stopsopa\LiteSerializer\Examples\ExampleClass
      */
     public function testNoMethod() {
 
@@ -234,8 +235,8 @@ class AbstractEntityTest extends PHPUnit_Framework_TestCase {
     }
     /**
      * @expectedException Stopsopa\LiteSerializer\Exceptions\AbstractEntityException
-     * @expectedExceptionCode 4
-     * @expectedExceptionMessage Stopsopa\LiteSerializer\Libs\AbstractEntity::internalValueByMethodOrAttribute error: Property 'nonexist' doesn't exist and methods getNonexist(), isNonexist(), hasNonexist(), nonexist() are not accessible in Stopsopa\LiteSerializer\Examples\ExampleClass
+     * @expectedExceptionCode 1
+     * @expectedExceptionMessage Stopsopa\LiteSerializer\Libs\AbstractEntity::internalValueByMethodOrAttribute error: Property 'nonexist' doesn't exist and methods getNonexist(), isNonexist(), hasNonexist(), nonexist() are not accessible in 'Stopsopa\LiteSerializer\Examples\ExampleClass'
      */
     public function testNonExisting() {
 
@@ -251,8 +252,8 @@ class AbstractEntityTest extends PHPUnit_Framework_TestCase {
     }
     /**
      * @expectedException Stopsopa\LiteSerializer\Exceptions\AbstractEntityException
-     * @expectedExceptionCode 4
-     * @expectedExceptionMessage Stopsopa\LiteSerializer\Libs\AbstractEntity::internalValueByMethodOrAttribute error: Property 'protected' doesn't exist and methods getProtected(), isProtected(), hasProtected(), protected() are not accessible in Stopsopa\LiteSerializer\Examples\ExampleClass
+     * @expectedExceptionCode 1
+     * @expectedExceptionMessage Stopsopa\LiteSerializer\Libs\AbstractEntity::internalValueByMethodOrAttribute error: Property 'protected' doesn't exist and methods getProtected(), isProtected(), hasProtected(), protected() are not accessible in 'Stopsopa\LiteSerializer\Examples\ExampleClass'
      */
     public function testProtMethod() {
 
@@ -263,8 +264,8 @@ class AbstractEntityTest extends PHPUnit_Framework_TestCase {
 
     /**
      * @expectedException Stopsopa\LiteSerializer\Exceptions\AbstractEntityException
-     * @expectedExceptionCode 4
-     * @expectedExceptionMessage Stopsopa\LiteSerializer\Libs\AbstractEntity::internalValueByMethodOrAttribute error: Methods getProtected_() is not public in class Stopsopa\LiteSerializer\Examples\ExampleClass
+     * @expectedExceptionCode 6
+     * @expectedExceptionMessage Method getProtected_() is not public in class Stopsopa\LiteSerializer\Examples\ExampleClass
      */
     public function testGetProtected_() {
 
@@ -275,8 +276,8 @@ class AbstractEntityTest extends PHPUnit_Framework_TestCase {
 
     /**
      * @expectedException Stopsopa\LiteSerializer\Exceptions\AbstractEntityException
-     * @expectedExceptionCode 4
-     * @expectedExceptionMessage Stopsopa\LiteSerializer\Libs\AbstractEntity::internalValueByMethodOrAttribute error: Property 'protected_' doesn't exist and methods getProtected_(), isProtected_(), hasProtected_(), protected_() are not accessible in Stopsopa\LiteSerializer\Examples\ExampleClass
+     * @expectedExceptionCode 1
+     * @expectedExceptionMessage Stopsopa\LiteSerializer\Libs\AbstractEntity::internalValueByMethodOrAttribute error: Property 'protected_' doesn't exist and methods getProtected_(), isProtected_(), hasProtected_(), protected_() are not accessible in 'Stopsopa\LiteSerializer\Examples\ExampleClass'
      */
     public function testIsProtected_() {
 
@@ -286,8 +287,8 @@ class AbstractEntityTest extends PHPUnit_Framework_TestCase {
     }
     /**
      * @expectedException Stopsopa\LiteSerializer\Exceptions\AbstractEntityException
-     * @expectedExceptionCode 4
-     * @expectedExceptionMessage Stopsopa\LiteSerializer\Libs\AbstractEntity::internalValueByMethodOrAttribute error: Property 'hasProtected_' doesn't exist and methods getHasProtected_(), isHasProtected_(), hasHasProtected_(), hasProtected_() are not accessible in Stopsopa\LiteSerializer\Examples\ExampleClass
+     * @expectedExceptionCode 1
+     * @expectedExceptionMessage Stopsopa\LiteSerializer\Libs\AbstractEntity::internalValueByMethodOrAttribute error: Property 'hasProtected_' doesn't exist and methods getHasProtected_(), isHasProtected_(), hasHasProtected_(), hasProtected_() are not accessible in 'Stopsopa\LiteSerializer\Examples\ExampleClass'
      */
     public function testHasProtected_() {
 
