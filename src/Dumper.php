@@ -13,11 +13,13 @@ abstract class Dumper extends AbstractEntity {
     const MODE_COLLECTION   = 2;
     const MODE_ENTITY       = 3;
 
-    protected $level = 0;
-    protected $scope = null;
+    protected $level        = 0;
+    protected $scope        = null;
+    protected $stack    = array();
 
     public function __construct() {
-        $this->level = 0;
+        $this->level        = 0;
+        $this->stack    = array();
     }
 
     /**
@@ -39,6 +41,8 @@ abstract class Dumper extends AbstractEntity {
 
         $this->level = 0;
 
+        $this->stack = array();
+
         $data = $this->innerDump($entity, $mode);
 
         if (method_exists($this, 'transform')) {
@@ -57,6 +61,10 @@ abstract class Dumper extends AbstractEntity {
      */
     protected function innerDump($entity, $mode = null)
     {
+        $class = static::getClass($entity);
+
+        $this->stack[] = $class;
+
         if (!is_array($entity) && !is_object($entity)) {
 
             $this->level += 1;
@@ -65,10 +73,14 @@ abstract class Dumper extends AbstractEntity {
 
             $this->level -= 1;
 
+            array_pop($this->stack);
+
             return $return;
         }
 
-        $mode = $mode ? $mode : static::MODE_AUTO;
+        if (!$mode) {
+            $mode = static::MODE_AUTO;
+        }
 
         $isfo = false;
 
@@ -82,6 +94,8 @@ abstract class Dumper extends AbstractEntity {
 
                 $this->level -= 1;
 
+                array_pop($this->stack);
+
                 return $return;
             }
 
@@ -94,8 +108,6 @@ abstract class Dumper extends AbstractEntity {
 
             if (!$isfo) {
 
-                $class = static::getClass($entity);
-
                 throw new AbstractEntityException("Entity '$class' is not foreachable", AbstractEntityException::CLASS_NOT_FOREACHABLE);
             }
 
@@ -103,15 +115,23 @@ abstract class Dumper extends AbstractEntity {
 
             $this->level += 1;
 
-            foreach ($entity as &$e) {
+            foreach ($entity as $key => &$e) {
+
+                $this->stack[] = $key;
+
                 try {
                     $tmp[] = $this->innerDump($e);
                 }
                 catch (DumperContinueException $e) {
+                    array_pop($this->stack);
                 }
+
+                array_pop($this->stack);
             }
 
             $this->level -= 1;
+
+            array_pop($this->stack);
 
             return $tmp;
         }
@@ -122,10 +142,12 @@ abstract class Dumper extends AbstractEntity {
 
             $tclass = static::getClass($this);
 
+            array_pop($this->stack);
+
             throw new AbstractEntityException(
                 sprintf(
                     "Dumping entity of class '%s' is not handled by dumper '%s', this entity should implement interface '%s' or add method '%s(\$entity)' to dumper",
-                    static::getClass($entity),
+                    $class,
                     $tclass,
                     'Stopsopa\\LiteSerializer\\DumpToArrayInterface',
                     $tclass.'->'.$method
@@ -138,7 +160,12 @@ abstract class Dumper extends AbstractEntity {
         // because of ReflectionMethod bad performance, i assume that because of
         // purpose of this methods they always will be public
 
-        return $this->{$method}($entity);
+
+        $data = $this->{$method}($entity);
+
+        array_pop($this->stack);
+
+        return $data;
     }
     /**
      * Helper method
@@ -152,6 +179,8 @@ abstract class Dumper extends AbstractEntity {
         $tmp = array();
 
         foreach ($fields as $target => $key) {
+
+            $this->stack[] = $target;
 
             $isdefault = false;
 
@@ -178,6 +207,8 @@ abstract class Dumper extends AbstractEntity {
             }
 
             $tmp[$target] = $this->innerDump($tmp2, $mode);
+
+            array_pop($this->stack);
         }
 
         return $tmp;

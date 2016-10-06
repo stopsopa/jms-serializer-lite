@@ -6,6 +6,7 @@ use PHPUnit_Framework_TestCase;
 use Stopsopa\LiteSerializer\Dumpers\DumperClassNotSupported;
 use Stopsopa\LiteSerializer\Dumpers\DumperInterface;
 use Stopsopa\LiteSerializer\Dumpers\DumperNotForeachable;
+use Stopsopa\LiteSerializer\Dumpers\DumperStack;
 use Stopsopa\LiteSerializer\Dumpers\DumperTransform;
 use Stopsopa\LiteSerializer\Dumpers\DumperTry1;
 use Stopsopa\LiteSerializer\Dumpers\DumperTry2;
@@ -16,6 +17,7 @@ use Stopsopa\LiteSerializer\Entities\Group;
 use DateTime;
 use Stopsopa\LiteSerializer\Exceptions\AbstractEntityException;
 use Stopsopa\LiteSerializer\Libs\AbstractEntity;
+use Proxies\__CG__\LiteSerializer\Entities\Group as CgGroup;
 
 class DumperTest extends PHPUnit_Framework_TestCase {
     public function getUser($user) {
@@ -229,5 +231,128 @@ class DumperTest extends PHPUnit_Framework_TestCase {
         $dump = $dumper->dump($u);
 
         $this->assertSame('{"groups":[{"id":1,"name":"this should be name not date"},{"id":2,"name":"group2"},{"id":3,"name":"group3"}],"comments":null,"name":"user1"}', json_encode($dump));
+    }
+    /**
+     * @expectedException Stopsopa\LiteSerializer\Exceptions\AbstractEntityException
+     * @expectedExceptionCode 2
+     * @expectedExceptionMessage Dumping entity of class 'LiteSerializer\Entities\Group' is not handled by dumper 'Stopsopa\LiteSerializer\Dumpers\DumperTransform', this entity should implement interface 'Stopsopa\LiteSerializer\DumpToArrayInterface' or add method 'Stopsopa\LiteSerializer\Dumpers\DumperTransform->dumpLiteSerializerEntities_Group($entity)' to dumper
+     */
+    public function testCg() {
+
+        $dumper = DumperTransform::getInstance();
+
+        $u = $this->getSetDate();
+
+        require_once dirname(__FILE__).'/Entities/__CG__/Group.php';
+
+        $u->setGroups(array(new CgGroup()));
+
+        $dump = $dumper->dump($u);
+
+        $this->assertSame('tes', $dump);
+    }
+    public function testStack() {
+
+        $dumper = DumperStack::getInstance();
+
+        $u1 = $this->getSetDate();
+
+        $u2 = $this->getSetDate();
+
+        $u1->addGroup($u2);
+
+        $this->assertSame($this->stackData(), json_encode($dumper->dump($u1)));
+    }
+    protected function stackData() {
+        ob_start();
+        ?>
+{
+    "groups": [
+        {
+            "s": [
+                "Stopsopa\\LiteSerializer\\Entities\\User",
+                "groups",
+                "array",
+                0,
+                "Stopsopa\\LiteSerializer\\Entities\\Group"
+            ]
+        },
+        {
+            "s": [
+                "Stopsopa\\LiteSerializer\\Entities\\User",
+                "groups",
+                "array",
+                1,
+                "Stopsopa\\LiteSerializer\\Entities\\Group"
+            ]
+        },
+        {
+            "s": [
+                "Stopsopa\\LiteSerializer\\Entities\\User",
+                "groups",
+                "array",
+                2,
+                "Stopsopa\\LiteSerializer\\Entities\\Group"
+            ]
+        },
+        {
+            "groups": [
+                {
+                    "s": [
+                        "Stopsopa\\LiteSerializer\\Entities\\User",
+                        "groups",
+                        "array",
+                        3,
+                        "Stopsopa\\LiteSerializer\\Entities\\User",
+                        "groups",
+                        "array",
+                        0,
+                        "Stopsopa\\LiteSerializer\\Entities\\Group"
+                    ]
+                },
+                {
+                    "s": [
+                        "Stopsopa\\LiteSerializer\\Entities\\User",
+                        "groups",
+                        "array",
+                        3,
+                        "Stopsopa\\LiteSerializer\\Entities\\User",
+                        "groups",
+                        "array",
+                        1,
+                        "Stopsopa\\LiteSerializer\\Entities\\Group"
+                    ]
+                },
+                {
+                    "s": [
+                        "Stopsopa\\LiteSerializer\\Entities\\User",
+                        "groups",
+                        "array",
+                        3,
+                        "Stopsopa\\LiteSerializer\\Entities\\User",
+                        "groups",
+                        "array",
+                        2,
+                        "Stopsopa\\LiteSerializer\\Entities\\Group"
+                    ]
+                }
+            ],
+            "s": [
+                "Stopsopa\\LiteSerializer\\Entities\\User",
+                "groups",
+                "array",
+                3,
+                "Stopsopa\\LiteSerializer\\Entities\\User"
+            ]
+        }
+    ],
+    "s": [
+        "Stopsopa\\LiteSerializer\\Entities\\User"
+    ]
+}
+<?php
+        $json = ob_get_clean();
+
+        return json_encode(json_decode($json, true));
     }
 }

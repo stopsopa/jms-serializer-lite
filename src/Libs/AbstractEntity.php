@@ -192,7 +192,7 @@ abstract class AbstractEntity {
      */
     public static function cleanClassNamespace($classNamespace) {
 
-        if ( strpos( $classNamespace, "\\" . preg_quote(static::MARKER) . "\\" ) ) {
+        if ( strpos( $classNamespace, "\\" . preg_quote(static::MARKER) . "\\" ) !== false ) {
             $classNamespace = preg_replace('#^[^\\\\]+\\\\[^\\\\]+\\\\(.*)$#', '$1', $classNamespace);
         }
 
