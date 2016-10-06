@@ -12,7 +12,7 @@ class DumperTry1 extends Dumper
         $data = $this->toArray($entity, array(
             'id'        => 'id',
             'group1'    => 'groups.1.name',
-            'group2'    => array('groups.10.name', 'missing')
+            'group2'    => $this->helperDefault('groups.10.name', 'missing')
         ));
 
         $data['level'] = $this->level;

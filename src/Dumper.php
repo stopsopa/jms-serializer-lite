@@ -33,6 +33,14 @@ abstract class Dumper extends AbstractEntity {
     public function dumpScope($entity, $scope) {
         return $this->dump($entity, $mode = null, $scope);
     }
+    public function dump($entity, $mode = null, $scope = null) {
+
+        $this->scope = $scope;
+
+        $this->level = 0;
+
+        return $this->innerDump($entity, $mode);
+    }
 
     /**
      * @param $object
@@ -41,12 +49,8 @@ abstract class Dumper extends AbstractEntity {
      *    mode - (collection|entity|auto) auto = isforeachable ? collection : entity
      * @throws Exception
      */
-    public function dump($entity, $mode = null, $scope = null)
+    protected function innerDump($entity, $mode = null)
     {
-        if (!is_null($scope)) {
-            $this->scope = $scope;
-        }
-
         if (!is_array($entity) && !is_object($entity)) {
 
             $this->level += 1;
@@ -95,7 +99,7 @@ abstract class Dumper extends AbstractEntity {
 
             foreach ($entity as &$e) {
                 try {
-                    $tmp[] = $this->dump($e);
+                    $tmp[] = $this->innerDump($e);
                 }
                 catch (DumperContinueException $e) {
                 }
@@ -110,10 +114,6 @@ abstract class Dumper extends AbstractEntity {
 
         if (!method_exists($this, $method)) {
 
-            // it would be good to test accessability of this method but i don't do that
-            // because of ReflectionMethod bad performance, i assume that because of
-            // purpose of this methods they always will be public
-
             $tclass = static::getClass($this);
 
             throw new AbstractEntityException(
@@ -127,6 +127,10 @@ abstract class Dumper extends AbstractEntity {
                 AbstractEntityException::METHOD_NOT_IMPLEMENTED
             );
         }
+
+        // it would be good to test accessability of this method but i don't do that
+        // because of ReflectionMethod bad performance, i assume that because of
+        // purpose of this methods they always will be public
 
         return $this->{$method}($entity);
     }
@@ -167,10 +171,16 @@ abstract class Dumper extends AbstractEntity {
                 $tmp2 = AbstractEntity::get($entity, $key);
             }
 
-            $tmp[$target] = $this->dump($tmp2, $mode);
+            $tmp[$target] = $this->innerDump($tmp2, $mode);
         }
 
         return $tmp;
+    }
+    protected function helperDefault($key, $default) {
+        return array($key, $default);
+    }
+    protected function helperMode($key, $mode, $default = null) {
+        return array($key, $default, $mode);
     }
     protected function dump_DateTime($date)
     {

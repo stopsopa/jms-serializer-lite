@@ -8,10 +8,13 @@ use Stopsopa\LiteSerializer\Dumpers\DumperInterface;
 use Stopsopa\LiteSerializer\Dumpers\DumperNotForeachable;
 use Stopsopa\LiteSerializer\Dumpers\DumperTry1;
 use Stopsopa\LiteSerializer\Dumpers\DumperTry2;
+use Stopsopa\LiteSerializer\Dumpers\DumperWrongKey;
 use Stopsopa\LiteSerializer\Entities\Comments;
 use Stopsopa\LiteSerializer\Entities\User;
 use Stopsopa\LiteSerializer\Entities\Group;
 use DateTime;
+use Stopsopa\LiteSerializer\Exceptions\AbstractEntityException;
+use Stopsopa\LiteSerializer\Libs\AbstractEntity;
 
 class DumperTest extends PHPUnit_Framework_TestCase {
     public function getUser($user) {
@@ -85,33 +88,49 @@ class DumperTest extends PHPUnit_Framework_TestCase {
 
         $u = $this->getSet1();
 
-        $dump = DumperTry1::getInstance()->dump($u);
+        $dumper = DumperTry1::getInstance();
+
+        $dump = $dumper->dump($u);
 
         $this->assertSame('{"id":1,"group1":"group2","group2":"missing","level":0,"scope":null}', json_encode($dump));
+
+        $this->assertSame(0, AbstractEntity::get($dumper, 'level'));
     }
     public function testNested() {
 
         $u = $this->getSet1();
 
-        $dump = DumperTry2::getInstance()->dump($u);
+        $dumper = DumperTry2::getInstance();
+
+        $dump = $dumper->dump($u);
 
         $this->assertSame('{"groups":[{"id":1,"name":"group1"},{"id":3,"name":"group3"}],"name":"user1"}', json_encode($dump));
+
+        $this->assertSame(0, AbstractEntity::get($dumper, 'level'));
     }
     public function testDate() {
 
         $u = $this->getSetDate();
 
-        $dump = DumperTry2::getInstance()->dump($u);
+        $dumper = DumperTry2::getInstance();
+
+        $dump = $dumper->dump($u);
 
         $this->assertSame('{"groups":[{"id":1,"name":"2016-07-07 09:04:03"},{"id":3,"name":"group3"}],"name":"user1"}', json_encode($dump));
+
+        $this->assertSame(0, AbstractEntity::get($dumper, 'level'));
     }
     public function testScope() {
 
         $u = $this->getSetDate();
 
-        $dump = DumperTry2::getInstance()->dumpScope($u, 'noname');
+        $dumper = DumperTry2::getInstance();
+
+        $dump = $dumper->dumpScope($u, 'noname');
 
         $this->assertSame('{"groups":[{"id":1},{"id":3}]}', json_encode($dump));
+
+        $this->assertSame(0, AbstractEntity::get($dumper, 'level'));
     }
     /**
      * @expectedException Stopsopa\LiteSerializer\Exceptions\AbstractEntityException
@@ -127,9 +146,13 @@ class DumperTest extends PHPUnit_Framework_TestCase {
 
         $u->setComments(new Comments());
 
-        $dump = DumperInterface::getInstance()->dumpScope($u, 'noname');
+        $dumper = DumperInterface::getInstance();
+
+        $dump = $dumper->dumpScope($u, 'noname');
 
         $this->assertSame('{"groups":[{"id":1},{"id":2},{"id":3}],"comments":["first comment","second comment","third comment","noname",1]}', json_encode($dump));
+
+        $this->assertSame(0, AbstractEntity::get($dumper, 'level'));
     }
     /**
      * @expectedException Stopsopa\LiteSerializer\Exceptions\AbstractEntityException
@@ -137,7 +160,12 @@ class DumperTest extends PHPUnit_Framework_TestCase {
      * @expectedExceptionMessage Dumping entity of class 'Stopsopa\LiteSerializer\Entities\Group' is not handled by dumper 'Stopsopa\LiteSerializer\Dumpers\DumperClassNotSupported', this entity should implement interface 'Stopsopa\LiteSerializer\DumpToArrayInterface' or add method 'Stopsopa\LiteSerializer\Dumpers\DumperClassNotSupported->dumpStopsopaLiteSerializerEntities_Group($entity)' to dumper
      */
     public function testClassNotSupported() {
-        DumperClassNotSupported::getInstance()->dump($this->getSetDate());
+
+        $dumper = DumperClassNotSupported::getInstance();
+
+        $dumper->dump($this->getSetDate());
+
+        $this->assertSame(0, AbstractEntity::get($dumper, 'level'));
     }
     /**
      * @expectedException Stopsopa\LiteSerializer\Exceptions\AbstractEntityException
@@ -146,6 +174,49 @@ class DumperTest extends PHPUnit_Framework_TestCase {
      */
     public function testDumpMode() {
 
-        DumperInterface::getInstance()->dumpMode($this->getSetDate(), Dumper::MODE_COLLECTION);
+        $dumper = DumperInterface::getInstance();
+
+        $dumper->dumpMode($this->getSetDate(), Dumper::MODE_COLLECTION);
+
+        $this->assertSame(0, AbstractEntity::get($dumper, 'level'));
+    }
+
+    public function testWrongKey() {
+
+        $dumper = DumperInterface::getInstance();
+
+        $data = $this->getSetDate();
+
+        try {
+            $dumper->dump($data);
+        }
+        catch (AbstractEntityException $e) {
+            $this->assertSame(1, $e->getCode());
+            $this->assertSame(
+                "Stopsopa\LiteSerializer\Libs\AbstractEntity::internalValueByMethodOrAttribute ".
+                "error: Property 'wrongKey' doesn't exist and methods getWrongKey(), ".
+                "isWrongKey(), hasWrongKey(), wrongKey() are not accessible in 'Stopsopa\LiteSerializer\Entities\Group'",
+                $e->getMessage()
+            );
+        }
+
+        try {
+            $group = $data->getGroups();
+
+            $group = $group[1];
+
+            $dumper->dump($group);
+        }
+        catch (AbstractEntityException $e) {
+            $this->assertSame(1, $e->getCode());
+            $this->assertSame(
+                "Stopsopa\LiteSerializer\Libs\AbstractEntity::internalValueByMethodOrAttribute ".
+                "error: Property 'wrongKey' doesn't exist and methods getWrongKey(), ".
+                "isWrongKey(), hasWrongKey(), wrongKey() are not accessible in 'Stopsopa\LiteSerializer\Entities\Group'",
+                $e->getMessage()
+            );
+        }
+
+        $this->assertSame(0, AbstractEntity::get($dumper, 'level'));
     }
 }

@@ -1,7 +1,10 @@
 {
   "name": "stopsopa/jms-serializer-lite",
-  "description": "Simple framework agnostic library to easy dump object or array from db to json - one direction",
+  "description": "Simple library to easy dump/shape object or array from db to make  - one direction",
   "license": "MIT",
+  "require": {
+    "php": "^5.3"
+  },
   "authors": [
     {
       "name": "Szymon Działowski",
