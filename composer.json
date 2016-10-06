@@ -3,7 +3,7 @@
   "description": "Simple library to easy dump/shape object or array from db to make  - one direction",
   "license": "MIT",
   "require": {
-    "php": "^5.3.3 || ^7.0"
+    "php": "^5.3 || ^7.0"
   },
   "authors": [
     {

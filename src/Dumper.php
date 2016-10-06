@@ -39,7 +39,13 @@ abstract class Dumper extends AbstractEntity {
 
         $this->level = 0;
 
-        return $this->innerDump($entity, $mode);
+        $data = $this->innerDump($entity, $mode);
+
+        if (method_exists($this, 'transform')) {
+            return $this->transform($data);
+        }
+
+        return $data;
     }
 
     /**

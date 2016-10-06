@@ -6,6 +6,7 @@ use PHPUnit_Framework_TestCase;
 use Stopsopa\LiteSerializer\Dumpers\DumperClassNotSupported;
 use Stopsopa\LiteSerializer\Dumpers\DumperInterface;
 use Stopsopa\LiteSerializer\Dumpers\DumperNotForeachable;
+use Stopsopa\LiteSerializer\Dumpers\DumperTransform;
 use Stopsopa\LiteSerializer\Dumpers\DumperTry1;
 use Stopsopa\LiteSerializer\Dumpers\DumperTry2;
 use Stopsopa\LiteSerializer\Dumpers\DumperWrongKey;
@@ -218,5 +219,15 @@ class DumperTest extends PHPUnit_Framework_TestCase {
         }
 
         $this->assertSame(0, AbstractEntity::get($dumper, 'level'));
+    }
+    public function testTransform() {
+
+        $dumper = DumperTransform::getInstance();
+
+        $u = $this->getSetDate();
+
+        $dump = $dumper->dump($u);
+
+        $this->assertSame('{"groups":[{"id":1,"name":"this should be name not date"},{"id":2,"name":"group2"},{"id":3,"name":"group3"}],"comments":null,"name":"user1"}', json_encode($dump));
     }
 }
