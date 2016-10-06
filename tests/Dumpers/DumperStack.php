@@ -17,9 +17,9 @@ class DumperStack extends Dumper
 
         $data = $this->toArray($entity, $dump);
 
-        $data['s'] = $this->stack;
-
-        return $data;
+        return array_merge(array(
+            's' => $this->stack
+        ), $data);
     }
     public function dumpStopsopaLiteSerializerEntities_Group($entity) {
 

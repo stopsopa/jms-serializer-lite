@@ -265,8 +265,11 @@ class DumperTest extends PHPUnit_Framework_TestCase {
     }
     protected function stackData() {
         ob_start();
-        ?>
+?>
 {
+    "s": [
+        "Stopsopa\\LiteSerializer\\Entities\\User"
+    ],
     "groups": [
         {
             "s": [
@@ -296,6 +299,13 @@ class DumperTest extends PHPUnit_Framework_TestCase {
             ]
         },
         {
+            "s": [
+                "Stopsopa\\LiteSerializer\\Entities\\User",
+                "groups",
+                "array",
+                3,
+                "Stopsopa\\LiteSerializer\\Entities\\User"
+            ],
             "groups": [
                 {
                     "s": [
@@ -336,18 +346,8 @@ class DumperTest extends PHPUnit_Framework_TestCase {
                         "Stopsopa\\LiteSerializer\\Entities\\Group"
                     ]
                 }
-            ],
-            "s": [
-                "Stopsopa\\LiteSerializer\\Entities\\User",
-                "groups",
-                "array",
-                3,
-                "Stopsopa\\LiteSerializer\\Entities\\User"
             ]
         }
-    ],
-    "s": [
-        "Stopsopa\\LiteSerializer\\Entities\\User"
     ]
 }
 <?php
