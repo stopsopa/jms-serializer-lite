@@ -14,7 +14,6 @@ class AbstractEntityTest extends PHPUnit_Framework_TestCase {
 
         $this->assertEquals('pubval', AbstractEntity::get($c, 'pub'));
     }
-
     /**
      * @expectedException Stopsopa\LiteSerializer\Exceptions\AbstractEntityException
      * @expectedExceptionCode 4
@@ -26,8 +25,6 @@ class AbstractEntityTest extends PHPUnit_Framework_TestCase {
 
         AbstractEntity::get($c, 5);
     }
-
-
     /**
      * @expectedException Stopsopa\LiteSerializer\Exceptions\AbstractEntityException
      * @expectedExceptionCode 5
@@ -62,7 +59,6 @@ class AbstractEntityTest extends PHPUnit_Framework_TestCase {
 
         $this->assertEquals('six', AbstractEntity::get($c, 'one.two.three.four'));
     }
-
     /**
      * @expectedException Stopsopa\LiteSerializer\Exceptions\AbstractEntityException
      * @expectedExceptionCode 1
@@ -100,7 +96,6 @@ class AbstractEntityTest extends PHPUnit_Framework_TestCase {
 
         $this->assertEquals('default', AbstractEntity::get($c, 'one.two.three.seven', 'default'));
     }
-
     /**
      * @expectedException Stopsopa\LiteSerializer\Exceptions\AbstractEntityException
      * @expectedExceptionCode 1
@@ -261,7 +256,6 @@ class AbstractEntityTest extends PHPUnit_Framework_TestCase {
 
         $this->assertEquals('', AbstractEntity::get($a, 'protected'));
     }
-
     /**
      * @expectedException Stopsopa\LiteSerializer\Exceptions\AbstractEntityException
      * @expectedExceptionCode 6
@@ -273,7 +267,6 @@ class AbstractEntityTest extends PHPUnit_Framework_TestCase {
 
         $this->assertEquals('', AbstractEntity::get($a, 'getProtected_()'));
     }
-
     /**
      * @expectedException Stopsopa\LiteSerializer\Exceptions\AbstractEntityException
      * @expectedExceptionCode 1

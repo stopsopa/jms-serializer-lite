@@ -1,10 +1,8 @@
 <?php
 
 namespace Stopsopa\LiteSerializer\Dumpers;
-use ArrayAccess;
+
 use Stopsopa\LiteSerializer\Dumper;
-use Stopsopa\LiteSerializer\Entities\Group;
-use Stopsopa\LiteSerializer\Entities\User;
 
 class DumperTry1 extends Dumper
 {

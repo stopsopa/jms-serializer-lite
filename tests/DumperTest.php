@@ -10,8 +10,7 @@ use Stopsopa\LiteSerializer\Dumpers\DumperStack;
 use Stopsopa\LiteSerializer\Dumpers\DumperTransform;
 use Stopsopa\LiteSerializer\Dumpers\DumperTry1;
 use Stopsopa\LiteSerializer\Dumpers\DumperTry2;
-use Stopsopa\LiteSerializer\Dumpers\DumperWrongKey;
-use Stopsopa\LiteSerializer\Entities\Comments;
+use Stopsopa\LiteSerializer\Dumpers\DumperWrongKey;use Stopsopa\LiteSerializer\Entities\Comments;
 use Stopsopa\LiteSerializer\Entities\User;
 use Stopsopa\LiteSerializer\Entities\Group;
 use DateTime;
@@ -186,14 +185,16 @@ class DumperTest extends PHPUnit_Framework_TestCase {
 
     public function testWrongKey() {
 
-        $dumper = DumperInterface::getInstance();
+        $dumper = DumperWrongKey::getInstance();
 
         $data = $this->getSetDate();
 
+        $isExc = false;
         try {
             $dumper->dump($data);
         }
         catch (AbstractEntityException $e) {
+            $isExc = true;
             $this->assertSame(1, $e->getCode());
             $this->assertSame(
                 "Stopsopa\LiteSerializer\Libs\AbstractEntity::internalValueByMethodOrAttribute ".
@@ -203,6 +204,9 @@ class DumperTest extends PHPUnit_Framework_TestCase {
             );
         }
 
+        $this->assertTrue($isExc);
+
+        $isExc = false;
         try {
             $group = $data->getGroups();
 
@@ -211,6 +215,7 @@ class DumperTest extends PHPUnit_Framework_TestCase {
             $dumper->dump($group);
         }
         catch (AbstractEntityException $e) {
+            $isExc = true;
             $this->assertSame(1, $e->getCode());
             $this->assertSame(
                 "Stopsopa\LiteSerializer\Libs\AbstractEntity::internalValueByMethodOrAttribute ".
@@ -219,6 +224,8 @@ class DumperTest extends PHPUnit_Framework_TestCase {
                 $e->getMessage()
             );
         }
+
+        $this->assertTrue($isExc);
 
         $this->assertSame(0, AbstractEntity::get($dumper, 'level'));
     }
