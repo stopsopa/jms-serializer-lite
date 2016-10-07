@@ -28,9 +28,7 @@ class DumperTest extends PHPUnit_Framework_TestCase {
 
         $dump = $dumper->dump($u);
 
-        $this->assertSame('{"id":1,"group1":"group2","group2":"missing","level":0,"scope":null}', json_encode($dump));
-
-        $this->assertSame(0, AbstractEntity::get($dumper, 'level'));
+        $this->assertSame('{"id":1,"group1":"group2","group2":"missing","scope":null}', json_encode($dump));
     }
     public function testNested() {
 
@@ -41,8 +39,6 @@ class DumperTest extends PHPUnit_Framework_TestCase {
         $dump = $dumper->dump($u);
 
         $this->assertSame('{"groups":[{"id":1,"name":"group1"},{"id":3,"name":"ignoreme"}],"name":"user1"}', json_encode($dump));
-
-        $this->assertSame(0, AbstractEntity::get($dumper, 'level'));
     }
     public function testDate() {
 
@@ -53,8 +49,6 @@ class DumperTest extends PHPUnit_Framework_TestCase {
         $dump = $dumper->dump($u);
 
         $this->assertSame('{"groups":[{"id":1,"name":"2016-07-07 09:04:03"},{"id":3,"name":"ignoreme"}],"name":"user1"}', json_encode($dump));
-
-        $this->assertSame(0, AbstractEntity::get($dumper, 'level'));
     }
     public function testScope() {
 
@@ -65,8 +59,6 @@ class DumperTest extends PHPUnit_Framework_TestCase {
         $dump = $dumper->dumpScope($u, 'noname');
 
         $this->assertSame('{"groups":[{"id":1},{"id":3}]}', json_encode($dump));
-
-        $this->assertSame(0, AbstractEntity::get($dumper, 'level'));
     }
     /**
      * @expectedException Stopsopa\LiteSerializer\Exceptions\AbstractEntityException
@@ -86,9 +78,7 @@ class DumperTest extends PHPUnit_Framework_TestCase {
 
         $dump = $dumper->dumpScope($u, 'noname');
 
-        $this->assertSame('{"groups":[{"id":1},{"id":2},{"id":3}],"comments":["first comment","second comment","third comment","noname",1]}', json_encode($dump));
-
-        $this->assertSame(0, AbstractEntity::get($dumper, 'level'));
+        $this->assertSame('{"groups":[{"id":1},{"id":2},{"id":3}],"comments":["first comment","second comment","third comment","noname"]}', json_encode($dump));
     }
     /**
      * @expectedException Stopsopa\LiteSerializer\Exceptions\AbstractEntityException
@@ -100,8 +90,6 @@ class DumperTest extends PHPUnit_Framework_TestCase {
         $dumper = DumperClassNotSupported::getInstance();
 
         $dumper->dump(DataProvider::getSetDate());
-
-        $this->assertSame(0, AbstractEntity::get($dumper, 'level'));
     }
     /**
      * @expectedException Stopsopa\LiteSerializer\Exceptions\AbstractEntityException
@@ -113,8 +101,6 @@ class DumperTest extends PHPUnit_Framework_TestCase {
         $dumper = DumperInterface::getInstance();
 
         $dumper->dumpMode(DataProvider::getSetDate(), Dumper::MODE_COLLECTION);
-
-        $this->assertSame(0, AbstractEntity::get($dumper, 'level'));
     }
 
     public function testWrongKey() {
@@ -160,8 +146,6 @@ class DumperTest extends PHPUnit_Framework_TestCase {
         }
 
         $this->assertTrue($isExc);
-
-        $this->assertSame(0, AbstractEntity::get($dumper, 'level'));
     }
     public function testTransform() {
 

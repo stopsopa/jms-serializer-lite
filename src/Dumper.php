@@ -13,12 +13,10 @@ abstract class Dumper extends AbstractEntity {
     const MODE_COLLECTION   = 2;
     const MODE_ENTITY       = 3;
 
-    protected $level        = 0;
     protected $scope        = null;
     protected $stack    = array();
 
     public function __construct() {
-        $this->level        = 0;
         $this->stack    = array();
     }
 
@@ -38,8 +36,6 @@ abstract class Dumper extends AbstractEntity {
     public function dump($entity, $mode = null, $scope = null) {
 
         $this->scope = $scope;
-
-        $this->level = 0;
 
         $this->stack = array();
 
@@ -68,11 +64,7 @@ abstract class Dumper extends AbstractEntity {
 
             if (!is_array($entity) && !is_object($entity)) {
 
-                $this->level += 1;
-
                 $return = $this->dumpPrimitives($entity);
-
-                $this->level -= 1;
 
                 array_pop($this->stack);
 
@@ -89,11 +81,7 @@ abstract class Dumper extends AbstractEntity {
 
                 if ($entity instanceof DumpToArrayInterface) {
 
-                    $this->level += 1;
-
-                    $return = $entity->dumpToArray($this->scope, $this->level);
-
-                    $this->level -= 1;
+                    $return = $entity->dumpToArray($this->scope);
 
                     array_pop($this->stack);
 
@@ -115,8 +103,6 @@ abstract class Dumper extends AbstractEntity {
 
                 $tmp = array();
 
-                $this->level += 1;
-
                 foreach ($entity as $key => &$e) {
 
                     $this->stack[] = $key;
@@ -129,8 +115,6 @@ abstract class Dumper extends AbstractEntity {
 
                     array_pop($this->stack);
                 }
-
-                $this->level -= 1;
 
                 array_pop($this->stack);
 

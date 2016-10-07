@@ -13,7 +13,6 @@ class DumperTry1 extends Dumper
             'group2'    => $this->helperDefault('groups.10.name', 'missing')
         ));
 
-        $data['level'] = $this->level;
         $data['scope'] = $this->scope;
 
         return $data;

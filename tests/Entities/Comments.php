@@ -15,12 +15,11 @@ class Comments implements DumpToArrayInterface  {
         );
     }
 
-    public function dumpToArray($scope, $level)
+    public function dumpToArray($scope)
     {
         $data = $this->comments;
 
         $data[] = $scope;
-        $data[] = $level;
 
         return $data;
     }
