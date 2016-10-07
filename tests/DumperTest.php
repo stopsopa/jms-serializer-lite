@@ -4,91 +4,25 @@ namespace Stopsopa\LiteSerializer;
 
 use PHPUnit_Framework_TestCase;
 use Stopsopa\LiteSerializer\Dumpers\DumperClassNotSupported;
+use Stopsopa\LiteSerializer\Dumpers\DumperContinueNested;
 use Stopsopa\LiteSerializer\Dumpers\DumperInterface;
 use Stopsopa\LiteSerializer\Dumpers\DumperNotForeachable;
 use Stopsopa\LiteSerializer\Dumpers\DumperStack;
 use Stopsopa\LiteSerializer\Dumpers\DumperTransform;
 use Stopsopa\LiteSerializer\Dumpers\DumperTry1;
 use Stopsopa\LiteSerializer\Dumpers\DumperTry2;
-use Stopsopa\LiteSerializer\Dumpers\DumperWrongKey;use Stopsopa\LiteSerializer\Entities\Comments;
-use Stopsopa\LiteSerializer\Entities\User;
+use Stopsopa\LiteSerializer\Dumpers\DumperWrongKey;
+use Stopsopa\LiteSerializer\Entities\Comments;
 use Stopsopa\LiteSerializer\Entities\Group;
-use DateTime;
+use Stopsopa\LiteSerializer\Entities\User;
 use Stopsopa\LiteSerializer\Exceptions\AbstractEntityException;
 use Stopsopa\LiteSerializer\Libs\AbstractEntity;
 use Proxies\__CG__\LiteSerializer\Entities\Group as CgGroup;
 
 class DumperTest extends PHPUnit_Framework_TestCase {
-    public function getUser($user) {
-
-        $u = new User();
-
-        foreach ($user as $prop => $data) {
-            if (!is_array($data)) {
-                $u->{'set'.ucfirst($prop)}($data);
-            }
-        }
-
-        if (!empty($user['groups'])) {
-            foreach ($user['groups'] as $g) {
-
-                $group = new Group();
-
-                foreach ($g as $prop => $data) {
-                    $group->{'set'.ucfirst($prop)}($data);
-                }
-
-                $u->addGroup($group);
-            }
-        }
-
-        return $u;
-    }
-    protected function getSet1() {
-        return $this->getUser(array(
-            'id' => 1,
-            'name' => 'user1',
-            'surname' => 'surname1',
-            'groups' => array(
-                array(
-                    'id' => 1,
-                    'name' => 'group1'
-                ),
-                array(
-                    'id' => 2,
-                    'name' => 'group2'
-                ),
-                array(
-                    'id' => 3,
-                    'name' => 'group3'
-                )
-            )
-        ));
-    }
-    protected function getSetDate() {
-        return $this->getUser(array(
-            'id' => 1,
-            'name' => 'user1',
-            'surname' => 'surname1',
-            'groups' => array(
-                array(
-                    'id' => 1,
-                    'name' => new DateTime('2016-07-07 09:04:03')
-                ),
-                array(
-                    'id' => 2,
-                    'name' => 'group2'
-                ),
-                array(
-                    'id' => 3,
-                    'name' => 'group3'
-                )
-            )
-        ));
-    }
     public function testUser() {
 
-        $u = $this->getSet1();
+        $u = DataProvider::getSet1();
 
         $dumper = DumperTry1::getInstance();
 
@@ -100,31 +34,31 @@ class DumperTest extends PHPUnit_Framework_TestCase {
     }
     public function testNested() {
 
-        $u = $this->getSet1();
+        $u = DataProvider::getSet1();
 
         $dumper = DumperTry2::getInstance();
 
         $dump = $dumper->dump($u);
 
-        $this->assertSame('{"groups":[{"id":1,"name":"group1"},{"id":3,"name":"group3"}],"name":"user1"}', json_encode($dump));
+        $this->assertSame('{"groups":[{"id":1,"name":"group1"},{"id":3,"name":"ignoreme"}],"name":"user1"}', json_encode($dump));
 
         $this->assertSame(0, AbstractEntity::get($dumper, 'level'));
     }
     public function testDate() {
 
-        $u = $this->getSetDate();
+        $u = DataProvider::getSetDate();
 
         $dumper = DumperTry2::getInstance();
 
         $dump = $dumper->dump($u);
 
-        $this->assertSame('{"groups":[{"id":1,"name":"2016-07-07 09:04:03"},{"id":3,"name":"group3"}],"name":"user1"}', json_encode($dump));
+        $this->assertSame('{"groups":[{"id":1,"name":"2016-07-07 09:04:03"},{"id":3,"name":"ignoreme"}],"name":"user1"}', json_encode($dump));
 
         $this->assertSame(0, AbstractEntity::get($dumper, 'level'));
     }
     public function testScope() {
 
-        $u = $this->getSetDate();
+        $u = DataProvider::getSetDate();
 
         $dumper = DumperTry2::getInstance();
 
@@ -140,11 +74,11 @@ class DumperTest extends PHPUnit_Framework_TestCase {
      * @expectedExceptionMessage Entity 'DateTime' is not foreachable
      */
     public function testNotForeachable() {
-        DumperNotForeachable::getInstance()->dump($this->getSetDate());
+        DumperNotForeachable::getInstance()->dump(DataProvider::getSetDate());
     }
     public function testInterface() {
 
-        $u = $this->getSetDate();
+        $u = DataProvider::getSetDate();
 
         $u->setComments(new Comments());
 
@@ -165,7 +99,7 @@ class DumperTest extends PHPUnit_Framework_TestCase {
 
         $dumper = DumperClassNotSupported::getInstance();
 
-        $dumper->dump($this->getSetDate());
+        $dumper->dump(DataProvider::getSetDate());
 
         $this->assertSame(0, AbstractEntity::get($dumper, 'level'));
     }
@@ -178,7 +112,7 @@ class DumperTest extends PHPUnit_Framework_TestCase {
 
         $dumper = DumperInterface::getInstance();
 
-        $dumper->dumpMode($this->getSetDate(), Dumper::MODE_COLLECTION);
+        $dumper->dumpMode(DataProvider::getSetDate(), Dumper::MODE_COLLECTION);
 
         $this->assertSame(0, AbstractEntity::get($dumper, 'level'));
     }
@@ -187,7 +121,7 @@ class DumperTest extends PHPUnit_Framework_TestCase {
 
         $dumper = DumperWrongKey::getInstance();
 
-        $data = $this->getSetDate();
+        $data = DataProvider::getSetDate();
 
         $isExc = false;
         try {
@@ -233,11 +167,11 @@ class DumperTest extends PHPUnit_Framework_TestCase {
 
         $dumper = DumperTransform::getInstance();
 
-        $u = $this->getSetDate();
+        $u = DataProvider::getSetDate();
 
         $dump = $dumper->dump($u);
 
-        $this->assertSame('{"groups":[{"id":1,"name":"this should be name not date"},{"id":2,"name":"group2"},{"id":3,"name":"group3"}],"comments":null,"name":"user1"}', json_encode($dump));
+        $this->assertSame('{"groups":[{"id":1,"name":"this should be name not date"},{"id":2,"name":"group2"},{"id":3,"name":"ignoreme"}],"comments":null,"name":"user1"}', json_encode($dump));
     }
     /**
      * @expectedException Stopsopa\LiteSerializer\Exceptions\AbstractEntityException
@@ -248,7 +182,7 @@ class DumperTest extends PHPUnit_Framework_TestCase {
 
         $dumper = DumperTransform::getInstance();
 
-        $u = $this->getSetDate();
+        $u = DataProvider::getSetDate();
 
         require_once dirname(__FILE__).'/Entities/__CG__/Group.php';
 
@@ -262,104 +196,30 @@ class DumperTest extends PHPUnit_Framework_TestCase {
 
         $dumper = DumperStack::getInstance();
 
-        $u1 = $this->getSetDate();
+        $u1 = DataProvider::getSetDate();
 
-        $u2 = $this->getSetDate();
+        $u2 = DataProvider::getSetDate();
 
         $u1->addGroup($u2);
 
-        $this->assertSame($this->stackData(), json_encode($dumper->dump($u1)));
+        $this->assertSame(DataProvider::stackData(), json_encode($dumper->dump($u1)));
     }
-    protected function stackData() {
-        ob_start();
-?>
-{
-    "s": [
-        "Stopsopa\\LiteSerializer\\Entities\\User"
-    ],
-    "groups": [
-        {
-            "s": [
-                "Stopsopa\\LiteSerializer\\Entities\\User",
-                "groups",
-                "array",
-                0,
-                "Stopsopa\\LiteSerializer\\Entities\\Group"
-            ]
-        },
-        {
-            "s": [
-                "Stopsopa\\LiteSerializer\\Entities\\User",
-                "groups",
-                "array",
-                1,
-                "Stopsopa\\LiteSerializer\\Entities\\Group"
-            ]
-        },
-        {
-            "s": [
-                "Stopsopa\\LiteSerializer\\Entities\\User",
-                "groups",
-                "array",
-                2,
-                "Stopsopa\\LiteSerializer\\Entities\\Group"
-            ]
-        },
-        {
-            "s": [
-                "Stopsopa\\LiteSerializer\\Entities\\User",
-                "groups",
-                "array",
-                3,
-                "Stopsopa\\LiteSerializer\\Entities\\User"
-            ],
-            "groups": [
-                {
-                    "s": [
-                        "Stopsopa\\LiteSerializer\\Entities\\User",
-                        "groups",
-                        "array",
-                        3,
-                        "Stopsopa\\LiteSerializer\\Entities\\User",
-                        "groups",
-                        "array",
-                        0,
-                        "Stopsopa\\LiteSerializer\\Entities\\Group"
-                    ]
-                },
-                {
-                    "s": [
-                        "Stopsopa\\LiteSerializer\\Entities\\User",
-                        "groups",
-                        "array",
-                        3,
-                        "Stopsopa\\LiteSerializer\\Entities\\User",
-                        "groups",
-                        "array",
-                        1,
-                        "Stopsopa\\LiteSerializer\\Entities\\Group"
-                    ]
-                },
-                {
-                    "s": [
-                        "Stopsopa\\LiteSerializer\\Entities\\User",
-                        "groups",
-                        "array",
-                        3,
-                        "Stopsopa\\LiteSerializer\\Entities\\User",
-                        "groups",
-                        "array",
-                        2,
-                        "Stopsopa\\LiteSerializer\\Entities\\Group"
-                    ]
-                }
-            ]
-        }
-    ]
-}
-<?php
-        $json = ob_get_clean();
+    public function testContinueNested() {
 
-        return json_encode(json_decode($json, true));
+        $u1 = DataProvider::getSetDate();
+
+        $mg = $u1->getGroups();
+
+        /* @var $mg Group */
+        $mg = $mg[1];
+
+        $user = new User();
+        $user->setName('ignoreme');
+
+        $mg->setNested($user);
+
+        $dumper = DumperContinueNested::getInstance();
+
+        $this->assertSame('{"groups":[{"name":"2016-07-07 09:04:03","nested":null},{"name":"group2","nested":null}],"name":"user1"}', json_encode($dumper->dump($u1)));
     }
 }

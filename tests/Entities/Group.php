@@ -5,6 +5,7 @@ namespace Stopsopa\LiteSerializer\Entities;
 class Group {
     protected $id;
     protected $name;
+    protected $nested;
 
     /**
      * @return mixed
@@ -42,4 +43,21 @@ class Group {
         return $this;
     }
 
+    /**
+     * @return mixed
+     */
+    public function getNested()
+    {
+        return $this->nested;
+    }
+
+    /**
+     * @param mixed $nested
+     * @return Group
+     */
+    public function setNested($nested)
+    {
+        $this->nested = $nested;
+        return $this;
+    }
 }

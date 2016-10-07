@@ -59,38 +59,18 @@ abstract class Dumper extends AbstractEntity {
      *    mode - (collection|entity|auto) auto = isforeachable ? collection : entity
      * @throws Exception
      */
-    protected function innerDump($entity, $mode = null)
+    protected function innerDump($entity, $mode = null, $returnNullInsteadOfDumperContinueException = true)
     {
-        $class = static::getClass($entity);
+        try {
+            $class = static::getClass($entity);
 
-        $this->stack[] = $class;
+            $this->stack[] = $class;
 
-        if (!is_array($entity) && !is_object($entity)) {
-
-            $this->level += 1;
-
-            $return = $this->dumpPrimitives($entity);
-
-            $this->level -= 1;
-
-            array_pop($this->stack);
-
-            return $return;
-        }
-
-        if (!$mode) {
-            $mode = static::MODE_AUTO;
-        }
-
-        $isfo = false;
-
-        if ($mode === static::MODE_AUTO) {
-
-            if ($entity instanceof DumpToArrayInterface) {
+            if (!is_array($entity) && !is_object($entity)) {
 
                 $this->level += 1;
 
-                $return = $entity->dumpToArray($this->scope, $this->level);
+                $return = $this->dumpPrimitives($entity);
 
                 $this->level -= 1;
 
@@ -99,73 +79,100 @@ abstract class Dumper extends AbstractEntity {
                 return $return;
             }
 
-            $isfo = static::isForeachable($entity);
-
-            $mode = $isfo ? static::MODE_COLLECTION : static::MODE_ENTITY;
-        }
-
-        if ($mode === static::MODE_COLLECTION) {
-
-            if (!$isfo) {
-
-                throw new AbstractEntityException("Entity '$class' is not foreachable", AbstractEntityException::CLASS_NOT_FOREACHABLE);
+            if (!$mode) {
+                $mode = static::MODE_AUTO;
             }
 
-            $tmp = array();
+            $isfo = false;
 
-            $this->level += 1;
+            if ($mode === static::MODE_AUTO) {
 
-            foreach ($entity as $key => &$e) {
+                if ($entity instanceof DumpToArrayInterface) {
 
-                $this->stack[] = $key;
+                    $this->level += 1;
 
-                try {
-                    $tmp[] = $this->innerDump($e);
+                    $return = $entity->dumpToArray($this->scope, $this->level);
+
+                    $this->level -= 1;
+
+                    array_pop($this->stack);
+
+                    return $return;
                 }
-                catch (DumperContinueException $e) {
+
+                $isfo = static::isForeachable($entity);
+
+                $mode = $isfo ? static::MODE_COLLECTION : static::MODE_ENTITY;
+            }
+
+            if ($mode === static::MODE_COLLECTION) {
+
+                if (!$isfo) {
+
+                    throw new AbstractEntityException("Entity '$class' is not foreachable",
+                        AbstractEntityException::CLASS_NOT_FOREACHABLE);
+                }
+
+                $tmp = array();
+
+                $this->level += 1;
+
+                foreach ($entity as $key => &$e) {
+
+                    $this->stack[] = $key;
+
+                    try {
+                        $tmp[] = $this->innerDump($e, Dumper::MODE_AUTO, false);
+                    } catch (DumperContinueException $e) {
+                        array_pop($this->stack);
+                    }
+
                     array_pop($this->stack);
                 }
 
+                $this->level -= 1;
+
                 array_pop($this->stack);
+
+                return $tmp;
             }
 
-            $this->level -= 1;
+            $method = static::getMethodName($entity);
+
+            if (!method_exists($this, $method)) {
+
+                $tclass = static::getClass($this);
+
+                array_pop($this->stack);
+
+                throw new AbstractEntityException(
+                    sprintf(
+                        "Dumping entity of class '%s' is not handled by dumper '%s', this entity should implement interface '%s' or add method '%s(\$entity)' to dumper",
+                        $class,
+                        $tclass,
+                        'Stopsopa\\LiteSerializer\\DumpToArrayInterface',
+                        $tclass . '->' . $method
+                    ),
+                    AbstractEntityException::METHOD_NOT_IMPLEMENTED
+                );
+            }
+
+            // it would be good to test accessability of this method but i don't do that
+            // because of ReflectionMethod bad performance, i assume that because of
+            // purpose of this methods they always will be public
+
+
+            $data = $this->{$method}($entity);
 
             array_pop($this->stack);
 
-            return $tmp;
+            return $data;
         }
-
-        $method = static::getMethodName($entity);
-
-        if (!method_exists($this, $method)) {
-
-            $tclass = static::getClass($this);
-
-            array_pop($this->stack);
-
-            throw new AbstractEntityException(
-                sprintf(
-                    "Dumping entity of class '%s' is not handled by dumper '%s', this entity should implement interface '%s' or add method '%s(\$entity)' to dumper",
-                    $class,
-                    $tclass,
-                    'Stopsopa\\LiteSerializer\\DumpToArrayInterface',
-                    $tclass.'->'.$method
-                ),
-                AbstractEntityException::METHOD_NOT_IMPLEMENTED
-            );
+        catch (DumperContinueException $e) {
+            if (!$returnNullInsteadOfDumperContinueException) {
+                throw $e;
+            }
         }
-
-        // it would be good to test accessability of this method but i don't do that
-        // because of ReflectionMethod bad performance, i assume that because of
-        // purpose of this methods they always will be public
-
-
-        $data = $this->{$method}($entity);
-
-        array_pop($this->stack);
-
-        return $data;
     }
     /**
      * Helper method

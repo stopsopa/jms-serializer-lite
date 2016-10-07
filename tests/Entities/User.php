@@ -9,6 +9,7 @@ class User {
     protected $groups;
     protected $comments;
 
+    protected $nested;
     public function __construct()
     {
         $this->groups = array();
@@ -108,4 +109,21 @@ class User {
         return $this;
     }
 
+    /**
+     * @return mixed
+     */
+    public function getNested()
+    {
+        return $this->nested;
+    }
+
+    /**
+     * @param mixed $nested
+     * @return User
+     */
+    public function setNested($nested)
+    {
+        $this->nested = $nested;
+        return $this;
+    }
 }
