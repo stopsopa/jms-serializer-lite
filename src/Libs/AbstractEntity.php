@@ -15,25 +15,28 @@ abstract class AbstractEntity {
 
     /**
      * @param object $entity
-     * @param string|array $attr - Key like 'author.id'
+     * @param string|array $path - Key like 'author.id'
      * @param $default - If you provide this parameter that is optional then this method don't throw
      *                   an exception but return this value
      * @return mixed
      * @throws AbstractEntityException
      */
-    public static function get($entity, $attr) {
+    public static function get($entity, $path) {
 
-        if (!is_string($attr)) {
-            throw new AbstractEntityException("Parameter 'attr' is not a string, it is: ".  gettype($attr), AbstractEntityException::ATTR_IS_NOT_STRING);
+        if (!is_string($path)) {
+            throw new AbstractEntityException(
+                "Parameter 'attr' is not a string, it is: " . gettype($path),
+                AbstractEntityException::ATTR_IS_NOT_STRING
+            );
         }
 
         $args = func_get_args();
 
-        if (strpos($attr, '.') !== false) {
+        if (strpos($path, '.') !== false) {
 
-            $attr = trim($attr);
+            $path = trim($path);
 
-            $exp = static::cascadeExplode($attr);
+            $exp = static::cascadeExplode($path);
 
             if ( count($exp) > 1 ) {
 
@@ -56,33 +59,36 @@ abstract class AbstractEntity {
 
         return call_user_func_array(array(__CLASS__, 'internalValueByMethodOrAttribute'), $args);
     }
-    protected static function internalValueByMethodOrAttribute($entity, $attr) {
+    protected static function internalValueByMethodOrAttribute($entity, $path) {
 
         $args = func_get_args();
 
         $isdefault = (count($args) > 2);
 
-        $short = ucfirst($attr);
+        $short = ucfirst($path);
 
-        if (is_array($entity) && array_key_exists($attr, $entity)) {
-            return $entity[$attr];
+        if (is_array($entity) && array_key_exists($path, $entity)) {
+            return $entity[$path];
         }
 
         if (is_object($entity)) {
 
             if ($entity instanceof ArrayAccess) {
-                if ($entity->offsetExists($attr)) {
-                    return $entity[$attr];
+                if ($entity->offsetExists($path)) {
+                    return $entity[$path];
                 }
             }
 
-            if ($attr === '') {
-                throw new AbstractEntityException("Parameter 'attr' is empty string: ".json_encode($attr), AbstractEntityException::ATTR_IS_EMPTY_STRING);
+            if ($path === '') {
+                throw new AbstractEntityException(
+                    "Parameter 'attr' is empty string: ".json_encode($path),
+                    AbstractEntityException::ATTR_IS_EMPTY_STRING
+                );
             }
 
-            if (strpos($attr, '()') !== false) {
+            if (strpos($path, '()') !== false) {
 
-                $method = rtrim($attr, '()');
+                $method = rtrim($path, '()');
 
                 $access = false;
 
@@ -142,12 +148,12 @@ abstract class AbstractEntity {
                     }
                 }
 
-                if (isset($entity->$attr)) {
-                    return $entity->$attr;
+                if (isset($entity->$path)) {
+                    return $entity->$path;
                 }
 
                 try {
-                    $rp = new ReflectionProperty($entity, $attr);
+                    $rp = new ReflectionProperty($entity, $path);
                     $rp->setAccessible(true);
 
                     return $rp->getValue($entity);
@@ -164,7 +170,8 @@ abstract class AbstractEntity {
         $class = self::getClass($entity);
 
         throw new AbstractEntityException(
-            __METHOD__." error: Property '$attr' doesn't exist and methods get$short(), is$short(), has$short(), $attr() are not accessible in '$class'",
+            __METHOD__." error: Property '$path' doesn't exist and ".
+            "methods get$short(), is$short(), has$short(), $path() are not accessible in '$class'",
             AbstractEntityException::WRONG_KEY
         );
     }

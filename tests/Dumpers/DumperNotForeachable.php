@@ -21,7 +21,11 @@ class DumperNotForeachable extends Dumper
     public function dumpStopsopaLiteSerializerEntities_Group($entity) {
 
         return $this->toArray($entity, array(
-            'name' => $this->helperMode('name', Dumper::MODE_COLLECTION, 'defaultname')
+            'name' => array(
+                'path'      => 'name',
+                'mode'      => Dumper::MODE_COLLECTION,
+                'default'   => 'defaultname'
+            )
         ));
     }
 

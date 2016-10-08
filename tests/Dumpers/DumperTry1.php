@@ -10,7 +10,10 @@ class DumperTry1 extends Dumper
         $data = $this->toArray($entity, array(
             'id'        => 'id',
             'group1'    => 'groups.1.name',
-            'group2'    => $this->helperDefault('groups.10.name', 'missing')
+            'group2'    => array(
+                'path'      => 'groups.10.name',
+                'default'   => 'missing'
+            )
         ));
 
         $data['scope'] = $this->scope;

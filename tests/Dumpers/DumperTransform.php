@@ -31,10 +31,4 @@ class DumperTransform extends Dumper
 
         return $this->toArray($entity, $dump);
     }
-    public function transform($data) {
-
-        $data['groups'][0]['name'] = 'this should be name not date';
-
-        return $data;
-    }
 }

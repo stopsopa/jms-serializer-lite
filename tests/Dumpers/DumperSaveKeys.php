@@ -5,35 +5,29 @@ namespace Stopsopa\LiteSerializer\Dumpers;
 use Stopsopa\LiteSerializer\Dumper;
 use Stopsopa\LiteSerializer\Exceptions\DumperContinueException;
 
-class DumperTry2 extends Dumper
+class DumperSaveKeys extends Dumper
 {
     public function dumpStopsopaLiteSerializerEntities_User($entity) {
 
-        $dump = array(
-            'groups'    => 'groups',
-        );
+        $data = $this->toArray($entity, array(
+            'name'      => 'name',
+            'groups'    => array(
+                'path'      => 'groups',
+                'savekeys'  => true
+            )
+        ));
 
-        if ($this->scope !== 'noname') {
-            $dump['name'] = 'name';
-        }
-
-        return $this->toArray($entity, $dump);
+        return $data;
     }
     public function dumpStopsopaLiteSerializerEntities_Group($entity) {
 
-        if ($entity->getId() === 2) {
+        if ($entity->getName() === 'ignoreme') {
             throw new DumperContinueException();
         }
 
-        $dump = array(
-            'id' => 'id'
-        );
-
-        if ($this->scope !== 'noname') {
-            $dump['name'] = 'name';
-        }
-
-        return $this->toArray($entity, $dump);
+        return $this->toArray($entity, array(
+            'name'      => 'name'
+        ));
     }
     public function dump_DateTime($date)
     {

@@ -33,17 +33,13 @@ abstract class Dumper extends AbstractEntity {
     public function dumpScope($entity, $scope) {
         return $this->dump($entity, $mode = null, $scope);
     }
-    public function dump($entity, $mode = null, $scope = null) {
+    public function dump($entity, $mode = null, $scope = null, $savekeys = false, $returnNullInsteadOfDumperContinueException = true) {
 
         $this->scope = $scope;
 
         $this->stack = array();
 
-        $data = $this->innerDump($entity, $mode);
-
-        if (method_exists($this, 'transform')) {
-            return $this->transform($data);
-        }
+        $data = $this->innerDump($entity, $mode, $savekeys, $returnNullInsteadOfDumperContinueException);
 
         return $data;
     }
@@ -55,7 +51,7 @@ abstract class Dumper extends AbstractEntity {
      *    mode - (collection|entity|auto) auto = isforeachable ? collection : entity
      * @throws Exception
      */
-    protected function innerDump($entity, $mode = null, $returnNullInsteadOfDumperContinueException = true)
+    protected function innerDump($entity, $mode = null, $savekeys = false, $returnNullInsteadOfDumperContinueException = true)
     {
         try {
             $class = static::getClass($entity);
@@ -97,8 +93,10 @@ abstract class Dumper extends AbstractEntity {
 
                 if (!$isfo) {
 
-                    throw new AbstractEntityException("Entity '$class' is not foreachable",
-                        AbstractEntityException::CLASS_NOT_FOREACHABLE);
+                    throw new AbstractEntityException(
+                        "Entity '$class' is not foreachable",
+                        AbstractEntityException::CLASS_NOT_FOREACHABLE
+                    );
                 }
 
                 $tmp = array();
@@ -108,7 +106,12 @@ abstract class Dumper extends AbstractEntity {
                     $this->stack[] = $key;
 
                     try {
-                        $tmp[] = $this->innerDump($e, Dumper::MODE_AUTO, false);
+                        if ($savekeys) {
+                            $tmp[$key] = $this->innerDump($e, Dumper::MODE_AUTO, false, false);
+                        }
+                        else {
+                            $tmp[] = $this->innerDump($e, Dumper::MODE_AUTO, false, false);
+                        }
                     } catch (DumperContinueException $e) {
                         array_pop($this->stack);
                     }
@@ -169,50 +172,50 @@ abstract class Dumper extends AbstractEntity {
     {
         $tmp = array();
 
-        foreach ($fields as $target => $key) {
+        foreach ($fields as $target => $path) {
 
             $this->stack[] = $target;
 
-            $isdefault = false;
+            $isdefault  = false;
 
-            $mode = static::MODE_AUTO;
+            $default    = false;
 
-            if (is_array($key)) {
+            $mode       = static::MODE_AUTO;
 
-                $isdefault = true;
+            $savekeys   = false;
 
-                $default    = $key[1];
+            if (is_array($path)) {
 
-                if (array_key_exists(2, $key)) {
-                    $mode = $key[2];
+                if (array_key_exists('path', $path)) {
+                    if (array_key_exists('default', $path)) {
+                        $isdefault = true;
+                    }
+                }
+                else {
+                    $isdefault = true;
+
+                    $path = array(
+                        'path'      => $path[0],
+                        'default'   => $path[1]
+                    );
                 }
 
-                $key = $key[0];
+                extract($path);
             }
 
             if ($isdefault) {
-                $tmp2 = AbstractEntity::get($entity, $key, $default);
+                $tmp2 = AbstractEntity::get($entity, $path, $default);
             }
             else {
-                $tmp2 = AbstractEntity::get($entity, $key);
+                $tmp2 = AbstractEntity::get($entity, $path);
             }
 
-            $tmp[$target] = $this->innerDump($tmp2, $mode);
+            $tmp[$target] = $this->innerDump($tmp2, $mode, $savekeys, true);
 
             array_pop($this->stack);
         }
 
         return $tmp;
-    }
-    protected function helperDefault($key, $default) {
-        return array($key, $default);
-    }
-    protected function helperMode($key, $mode, $default = null) {
-        return array($key, $default, $mode);
-    }
-    protected function dump_DateTime($date)
-    {
-        return $date->format('Y-m-d H:i:s');
     }
     /**
      * @param mixed $data

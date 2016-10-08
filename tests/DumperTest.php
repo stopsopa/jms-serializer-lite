@@ -7,6 +7,9 @@ use Stopsopa\LiteSerializer\Dumpers\DumperClassNotSupported;
 use Stopsopa\LiteSerializer\Dumpers\DumperContinueNested;
 use Stopsopa\LiteSerializer\Dumpers\DumperInterface;
 use Stopsopa\LiteSerializer\Dumpers\DumperNotForeachable;
+use Stopsopa\LiteSerializer\Dumpers\DumperEx;
+use Stopsopa\LiteSerializer\Dumpers\DumperNullInsteadOfException;
+use Stopsopa\LiteSerializer\Dumpers\DumperSaveKeys;
 use Stopsopa\LiteSerializer\Dumpers\DumperStack;
 use Stopsopa\LiteSerializer\Dumpers\DumperTransform;
 use Stopsopa\LiteSerializer\Dumpers\DumperTry1;
@@ -78,7 +81,7 @@ class DumperTest extends PHPUnit_Framework_TestCase {
 
         $dump = $dumper->dumpScope($u, 'noname');
 
-        $this->assertSame('{"groups":[{"id":1},{"id":2},{"id":3}],"comments":["first comment","second comment","third comment","noname"]}', json_encode($dump));
+        $this->assertSame('{"groups":[{"id":1},{"id":3},{"id":2}],"comments":["first comment","second comment","third comment","noname"]}', json_encode($dump));
     }
     /**
      * @expectedException Stopsopa\LiteSerializer\Exceptions\AbstractEntityException
@@ -147,16 +150,6 @@ class DumperTest extends PHPUnit_Framework_TestCase {
 
         $this->assertTrue($isExc);
     }
-    public function testTransform() {
-
-        $dumper = DumperTransform::getInstance();
-
-        $u = DataProvider::getSetDate();
-
-        $dump = $dumper->dump($u);
-
-        $this->assertSame('{"groups":[{"id":1,"name":"this should be name not date"},{"id":2,"name":"group2"},{"id":3,"name":"ignoreme"}],"comments":null,"name":"user1"}', json_encode($dump));
-    }
     /**
      * @expectedException Stopsopa\LiteSerializer\Exceptions\AbstractEntityException
      * @expectedExceptionCode 2
@@ -205,5 +198,56 @@ class DumperTest extends PHPUnit_Framework_TestCase {
         $dumper = DumperContinueNested::getInstance();
 
         $this->assertSame('{"groups":[{"name":"2016-07-07 09:04:03","nested":null},{"name":"group2","nested":null}],"name":"user1"}', json_encode($dumper->dump($u1)));
+    }
+    public function testEx() {
+
+        $u1 = DataProvider::getSetDate();
+
+        $g = $u1->getGroups();
+
+        $g = $g[1];
+
+        $g->ex = 'isval';
+
+        $dumper = DumperEx::getInstance();
+
+        $this->assertSame('{"name":"user1","groups":[{"name":"2016-07-07 09:04:03","nested":null,"ex":"noex"},{"name":"ignoreme","nested":null,"ex":"isval"},{"name":"group2","nested":null,"ex":"noex"}]}', json_encode($dumper->dump($u1)));
+    }
+    public function testNullInsteadOfException() {
+
+        $dumper = DumperNullInsteadOfException::getInstance();
+
+        $g = new Group();
+
+        $g->setName('test');
+
+        $this->assertSame(
+            '{"name":"test"}',
+            json_encode($dumper->dump($g))
+        );
+
+        $g->setName('ignoreme');
+
+        $this->assertSame(
+            'null',
+            json_encode($dumper->dump($g))
+        );
+    }
+    public function testSaveKeys() {
+
+        $u1 = DataProvider::getSetDate();
+
+        $g = $u1->getGroups();
+
+        $tmp = array();
+        foreach ($g as $key => $gg) {
+            $tmp['key'.$key] = $gg;
+        }
+
+        $u1->setGroups($tmp);
+
+        $dumper = DumperSaveKeys::getInstance();
+
+        $this->assertSame('{"name":"user1","groups":{"key0":{"name":"2016-07-07 09:04:03"},"key2":{"name":"group2"}}}', json_encode($dumper->dump($u1)));
     }
 }

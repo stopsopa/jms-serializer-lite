@@ -64,12 +64,12 @@ class DataProvider {
                     'name' => new DateTime('2016-07-07 09:04:03')
                 ),
                 array(
-                    'id' => 2,
-                    'name' => 'group2'
-                ),
-                array(
                     'id' => 3,
                     'name' => 'ignoreme'
+                ),
+                array(
+                    'id' => 2,
+                    'name' => 'group2'
                 )
             )
         ));
