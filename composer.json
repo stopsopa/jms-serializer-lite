@@ -1,6 +1,6 @@
 {
   "name": "stopsopa/jms-serializer-lite",
-  "description": "Simple library to easy dump/shape objects/arrays from db to make it ready to expose through RESTful API - one direction",
+  "description": "Simple library to easy dump/serialize objects/arrays from db to make it ready to expose through RESTful API - one direction",
   "license": "MIT",
   "require": {
     "php": "^5.3 || ^7.0"
