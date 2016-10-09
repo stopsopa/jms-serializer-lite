@@ -198,10 +198,10 @@ $array = $dumper->dump(array($comment1, $comment2, ...));
 ```   
  
  
-## Shorter syntax and helpers
+## Shorter syntax and helper
 
 
-All logic explained above can be much more condensed using helpers:
+All logic explained above can be much more condensed using helper 'toArray':
 
 
 ```php
@@ -361,15 +361,14 @@ class Group {
     public function setName($name) { $this->name = $name; return $this; }
 }
 # extend just to make this example shorter
-# the case is that we have one-to-many relation
+# the case is that we can build one-to-many relation using this classes
 class User extends Group {
     protected $groups = array();
     public function getGroups() { return $this->groups; }
     public function setGroups($groups) { $this->groups = $groups; return $this; }
 }
 
-$user = new User();
-$user->setGroups(array(
+$user = User::getInstance()->setId(50)->setName('user')->setGroups(array(
     'group-1' => Group::getInstance()->setId(10)->setName('gr 1'),
     'group-2' => Group::getInstance()->setId(11)->setName('gr 2'),
     'group-3' => Group::getInstance()->setId(12)->setName('gr 3'),
@@ -434,7 +433,7 @@ but when you change ...
     ...
 ```
  
-... keys will be saved ...
+... keys will be maintained ...
  
 ```json
 {
@@ -455,11 +454,11 @@ but when you change ...
 
 #### DumperInterface
 
-There is special interface Stopsopa\LiteSerializer\DumpToArrayInterface. Implement this interface to declare how to dump entity right in entity itself.
+There is special interface **Stopsopa\LiteSerializer\DumpToArrayInterface**. Implement this interface to declare how to dump entity right in **entity itself**.
  
 #### Default types serialization (integer, string, float, etc.)
  
- Anything else that is not array and is not object is serialized by method dumpPrimitives. You can easily change way of serializing even such values by overriding this method.
+ Anything else that is not array and is not object is serialized by method **dumpPrimitives**. You can easily change way of serializing even such values by overriding this method.
  
 #### Force mode
  
@@ -479,6 +478,34 @@ As you probably noticed everything what is 'foreachable' will be iterated and ea
         ));
     }
 ```
+
+... or You can dump these entity manually (not in 'toArray' method) like:
+
+```php
+
+    public function dumpMyProject_User($entity) {
+        $data = $this->toArray($entity, array(
+            'id'        => 'id',
+            'name'      => 'name',
+        ));
+        
+        $tmp = array();
+        foreach ($entity->getOrder() as $o) {
+            $tmp[] = array(
+                'id'        => 'id',
+                'prise'     => 'price',
+                ...
+            );
+        }
+        $data['order'] = $tmp;
+        
+        return $data;
+    }
+```
+
+... naaa, too long.
+
+
 
 #### Scope and stack
 
@@ -501,6 +528,9 @@ Example of using 'stack':
             # user is on higher level of hierarchy
             $map['groups'] = 'groups';
         }
+        
+        # stack is array and contain more information about where we 
+        # are in execution stack, inspect this later if You need.
 
         return $this->toArray($entity, $map);
     }
