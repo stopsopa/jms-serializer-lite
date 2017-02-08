@@ -9,7 +9,7 @@ Usually first choice of library for Symfony 2/3 to dump data from db to provide 
  
 So what does this library special do? 
 
-This library gives you ability to serialize any nested data structures (usually ORM objects) to any array structure, ready to json_encode in simplest possible way, without loosing flexibility and without loosing inheritance to provide new serialization format by changing old format. This library is also framework agnostic.
+This library gives you ability to serialize any nested data structures (usually ORM objects) to any array structure, ready to json_encode in simplest possible way, without loosing flexibility and without loosing inheritance to provide new serialization format by changing (overriding) old format. This library is also framework agnostic.
 
 
 # Installation
