@@ -5,7 +5,7 @@
 
 # Why it was built?
 
-Usually first choice of library to dump data from db to provide any RESTful feeds is [jms/serializer](http://jmsyst.com/libs/serializer). This tool is designed to serialize and unserialize data to xml, json, or yml and back to initial data structures. But usually there is need to just provide data into one direction - to json feeds. Additionally usually there is need to serialize the same object in different ways. In jms/serializer and similar complex tools usually you can use "groups", unfortunately this solution is not flexible enough to deal with real life situations.
+Usually first choice of library for Symfony 2/3 to dump data from db to provide any RESTful feeds is [jms/serializer](http://jmsyst.com/libs/serializer). This tool is designed to serialize and unserialize data to xml, json, or yml and back to initial data structures. But usually there is need to just provide data into one direction - to json feeds. Additionally usually there is need to serialize the same object in different ways. In jms/serializer and similar complex tools usually you can use "groups", unfortunately this solution is not flexible enough to deal with real life situations.
  
 So what does this library special do? 
 
