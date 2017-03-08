@@ -11,6 +11,18 @@ So what does this library special do?
 
 This library gives you ability to serialize any nested data structures (usually ORM objects) to any array structure, ready to json_encode in simplest possible way, without loosing flexibility and without loosing inheritance to provide new serialization format by changing (overriding) old format. This library is also framework agnostic.
 
+# Readme
+
+* [Basic usage](#documentation)
+* [Nested entities](#nested-entities)
+* [Serialize from different angles](#serialize-from-different-angles)
+* [Shorter syntax and helper](#shorter-syntax-and-helper)
+  - [Default values](#default-values)
+  - [Excluding/Omitting entities](#excludingomitting-entities)
+  - [Save keys](#save-keys)
+  - [DumperInterface](#dumperinterface)
+  - [Force mode](#force-mode)
+  - [Scope and stack](#scope-and-stack)
 
 # Installation
 
