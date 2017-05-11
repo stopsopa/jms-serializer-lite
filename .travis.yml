@@ -11,6 +11,7 @@ sudo: false
 
 install:
   - composer install --no-interaction
+  - composer require phpunit/phpunit
 
 script:
   - phpunit --stop-on-failure
