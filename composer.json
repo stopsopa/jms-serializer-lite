@@ -18,7 +18,6 @@
     "psr-4": { "Stopsopa\\LiteSerializer\\": "tests/" }
   },
   "require-dev": {
-      "satooshi/php-coveralls": "v0.7.1",
-      "phpunit/phpunit": "v4.5.0"
+      "satooshi/php-coveralls": "v0.7.1"
   }
 }
