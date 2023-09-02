@@ -2,6 +2,10 @@
 [![Coverage Status](https://coveralls.io/repos/github/stopsopa/jms-serializer-lite/badge.svg)](https://coveralls.io/github/stopsopa/jms-serializer-lite)
 [![Latest Stable Version](https://poser.pugx.org/stopsopa/jms-serializer-lite/v/stable)](https://packagist.org/packages/stopsopa/jms-serializer-lite)
 
+# DEPRECATED
+Created in 2016 - quite old now and not maintained.
+
+That was actually usefull a lot back then. But please don't use it now.
 
 # Why?
 
